@@ -33,7 +33,7 @@ type FormControlContextValue = {
   helperTextId: string;
   errorMessageId: string;
 
-  // controll accessibility props
+  // control accessibility props
   isRequired: boolean | undefined;
   isReadOnly: boolean | undefined;
   isDisabled: boolean | undefined;
@@ -73,7 +73,7 @@ export const FormControl: FC<FormControlProps> = ({
   const [hasHelperText, setHasHelperText] = useState(false);
   const [hasErrorMessage, setHasErrorMessage] = useState(false);
 
-  const controlId = id || alterId;
+  const controlId = (id || alterId) + "-control";
   const helperTextId = controlId + "-helper-text";
   const errorMessageId = controlId + "-error-message";
 
@@ -151,7 +151,7 @@ export const FormLabel = forwardRef<HTMLLabelElement, FormLabelProps>(
 
 type HelperTextProps = Omit<ComponentProps<"div">, "id">;
 
-export const HelperText = forwardRef<HTMLDivElement, HelperTextProps>(
+export const FormHelperText = forwardRef<HTMLDivElement, HelperTextProps>(
   function HelperText(props, forwardedRef) {
     const { getHelperTextProps } = useContext(FormControlContext) ?? {};
 
@@ -161,7 +161,7 @@ export const HelperText = forwardRef<HTMLDivElement, HelperTextProps>(
 
 export type ErrorMessageProps = Omit<ComponentProps<"div">, "id">;
 
-export const ErrorMessage = forwardRef<HTMLDivElement, ErrorMessageProps>(
+export const FormErrorMessage = forwardRef<HTMLDivElement, ErrorMessageProps>(
   function ErrorMessage(props, forwardedRef) {
     const { getErrorMessageProps, isInvalid } =
       useContext(FormControlContext) ?? {};
@@ -172,7 +172,7 @@ export const ErrorMessage = forwardRef<HTMLDivElement, ErrorMessageProps>(
   },
 );
 
-type FormInputControlProps = {
+export type FormInputControlProps = {
   id: string | undefined;
   required: boolean | undefined;
   readonly: boolean | undefined;
