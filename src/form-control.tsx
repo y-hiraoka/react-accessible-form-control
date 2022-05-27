@@ -175,7 +175,7 @@ export const FormErrorMessage = forwardRef<HTMLDivElement, ErrorMessageProps>(
 export type FormInputControlProps = {
   id: string | undefined;
   required: boolean | undefined;
-  readonly: boolean | undefined;
+  readOnly: boolean | undefined;
   disabled: boolean | undefined;
   "aria-required": AriaAttributes["aria-required"];
   "aria-describedby": AriaAttributes["aria-describedby"];
@@ -183,7 +183,7 @@ export type FormInputControlProps = {
 };
 
 export function useFormInputControlProps(
-  props: Partial<FormInputControlProps>,
+  intrinsicProps: Partial<FormInputControlProps>,
 ): FormInputControlProps {
   const {
     controlId,
@@ -197,25 +197,39 @@ export function useFormInputControlProps(
     isInvalid,
   } = useContext(FormControlContext) ?? {};
 
+  const ariaRequired = isRequired || intrinsicProps["aria-required"];
+  const ariaInvalid = isInvalid || intrinsicProps["aria-invalid"];
   const ariaDescribedBy = [
     hasErrorMessage && isInvalid && errorMessageId,
     hasHelperText && helperTextId,
-    props["aria-describedby"],
+    intrinsicProps["aria-describedby"],
   ]
     .filter(Boolean)
     .join(" ");
 
   return useMemo<FormInputControlProps>(
     () => ({
-      id: controlId,
-      required: isRequired,
-      readonly: isReadOnly,
-      disabled: isDisabled,
-      "aria-required": isRequired,
+      id: controlId || intrinsicProps.id,
+      required: isRequired || intrinsicProps.required,
+      readOnly: isReadOnly || intrinsicProps.readOnly,
+      disabled: isDisabled || intrinsicProps.disabled,
+      "aria-required": ariaRequired,
       "aria-describedby": ariaDescribedBy || undefined,
-      "aria-invalid": isInvalid,
+      "aria-invalid": ariaInvalid,
     }),
-    [ariaDescribedBy, controlId, isDisabled, isInvalid, isReadOnly, isRequired],
+    [
+      controlId,
+      intrinsicProps.id,
+      intrinsicProps.required,
+      intrinsicProps.readOnly,
+      intrinsicProps.disabled,
+      isRequired,
+      isReadOnly,
+      isDisabled,
+      ariaRequired,
+      ariaDescribedBy,
+      ariaInvalid,
+    ],
   );
 }
 
