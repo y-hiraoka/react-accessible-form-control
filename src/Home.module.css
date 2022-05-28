@@ -1,0 +1,61 @@
+.form {
+  padding: 16px;
+  max-width: 600px;
+  margin: auto;
+}
+
+.formControl + .formControl {
+  margin-top: 32px;
+}
+
+.formLabel {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.formHelperText {
+  margin-top: 8px;
+  color: gray;
+  font-size: 14px;
+}
+
+.formErrorMessage {
+  margin-top: 8px;
+  color: red;
+  font-size: 14px;
+}
+
+.formInputControl {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.formTextAreaControl {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  padding: 8px;
+}
+
+.formInputControl[aria-invalid="true"],
+.formTextAreaControl[aria-invalid="true"] {
+  border-color: red;
+}
+
+.submitButton {
+  margin-top: 32px;
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  background: plum;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+}

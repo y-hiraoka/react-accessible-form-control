@@ -30,6 +30,7 @@ test("FormControl and useFormInputControlProps", () => {
     "aria-required": undefined,
     "aria-describedby": undefined,
     "aria-invalid": undefined,
+    "aria-errormessage": undefined,
   });
 
   rerender({
@@ -49,6 +50,7 @@ test("FormControl and useFormInputControlProps", () => {
     "aria-required": true,
     "aria-describedby": undefined,
     "aria-invalid": true,
+    "aria-errormessage": undefined,
   });
 });
 
@@ -106,8 +108,12 @@ test("Form components", () => {
   expect(formInputControl.disabled).toBe(true);
   expect(formInputControl.required).toBe(true);
   expect(formInputControl.getAttribute("aria-required")).toBe("true");
-  // input[aria-describedby] が helper-text と error-message を指す
+  // input[aria-describedby] が helper-text を指す
   expect(formInputControl.getAttribute("aria-describedby")).toBe(
-    "test-id-control-error-message test-id-control-helper-text",
+    "test-id-control-helper-text",
+  );
+  // input[aria-errormessage] が error-message を指す
+  expect(formInputControl.getAttribute("aria-errormessage")).toBe(
+    "test-id-control-error-message",
   );
 });

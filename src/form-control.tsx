@@ -2,7 +2,6 @@ import {
   AriaAttributes,
   ComponentProps,
   createContext,
-  FC,
   ForwardedRef,
   forwardRef,
   ReactNode,
@@ -23,6 +22,13 @@ function assignRef<Elm>(forwardedRef: ForwardedRef<Elm>, element: Elm) {
   } else if (forwardedRef !== null) {
     forwardedRef.current = element;
   }
+}
+
+function joinOrUndefined(
+  ...args: (string | false | undefined | null)[]
+): string | undefined {
+  const joined = args.filter(Boolean).join(" ");
+  return joined !== "" ? joined : undefined;
 }
 
 /**
@@ -59,85 +65,93 @@ export type FormControlProps = {
   isDisabled?: boolean;
   isInvalid?: boolean;
   children: ReactNode;
-};
+} & ComponentProps<"div">;
 
-export const FormControl: FC<FormControlProps> = ({
-  id,
-  isRequired,
-  isReadOnly,
-  isDisabled,
-  isInvalid,
-  children,
-}) => {
-  const alterId = useId();
-  const [hasHelperText, setHasHelperText] = useState(false);
-  const [hasErrorMessage, setHasErrorMessage] = useState(false);
-
-  const controlId = (id || alterId) + "-control";
-  const helperTextId = controlId + "-helper-text";
-  const errorMessageId = controlId + "-error-message";
-
-  const getHelperTextProps: getFeedbackProps = useCallback(
-    forwardedRef => {
-      return {
-        id: helperTextId,
-        ref: node => {
-          assignRef(forwardedRef, node);
-          setHasHelperText(true);
-        },
-      };
-    },
-    [helperTextId],
-  );
-
-  const getErrorMessageProps: getFeedbackProps = useCallback(
-    forwardedRef => {
-      return {
-        id: errorMessageId,
-        ref: node => {
-          assignRef(forwardedRef, node);
-          setHasErrorMessage(true);
-        },
-      };
-    },
-    [errorMessageId],
-  );
-
-  const contextValue = useMemo<FormControlContextValue>(
-    () => ({
-      controlId,
-      helperTextId,
-      errorMessageId,
+export const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
+  function FormControl(
+    {
+      id,
       isRequired,
       isReadOnly,
       isDisabled,
       isInvalid,
-      hasHelperText,
-      getHelperTextProps,
-      hasErrorMessage,
-      getErrorMessageProps,
-    }),
-    [
-      controlId,
-      errorMessageId,
-      getErrorMessageProps,
-      getHelperTextProps,
-      hasErrorMessage,
-      hasHelperText,
-      helperTextId,
-      isDisabled,
-      isInvalid,
-      isReadOnly,
-      isRequired,
-    ],
-  );
+      children,
+      ...divProps
+    },
+    forwardedRef,
+  ) {
+    const alterId = useId();
+    const [hasHelperText, setHasHelperText] = useState(false);
+    const [hasErrorMessage, setHasErrorMessage] = useState(false);
 
-  return (
-    <FormControlContext.Provider value={contextValue}>
-      {children}
-    </FormControlContext.Provider>
-  );
-};
+    const controlId = (id || alterId) + "-control";
+    const helperTextId = controlId + "-helper-text";
+    const errorMessageId = controlId + "-error-message";
+
+    const getHelperTextProps: getFeedbackProps = useCallback(
+      forwardedRef => {
+        return {
+          id: helperTextId,
+          ref: node => {
+            assignRef(forwardedRef, node);
+            setHasHelperText(true);
+          },
+        };
+      },
+      [helperTextId],
+    );
+
+    const getErrorMessageProps: getFeedbackProps = useCallback(
+      forwardedRef => {
+        return {
+          id: errorMessageId,
+          ref: node => {
+            assignRef(forwardedRef, node);
+            setHasErrorMessage(true);
+          },
+        };
+      },
+      [errorMessageId],
+    );
+
+    const contextValue = useMemo<FormControlContextValue>(
+      () => ({
+        controlId,
+        helperTextId,
+        errorMessageId,
+        isRequired,
+        isReadOnly,
+        isDisabled,
+        isInvalid,
+        hasHelperText,
+        getHelperTextProps,
+        hasErrorMessage,
+        getErrorMessageProps,
+      }),
+      [
+        controlId,
+        errorMessageId,
+        getErrorMessageProps,
+        getHelperTextProps,
+        hasErrorMessage,
+        hasHelperText,
+        helperTextId,
+        isDisabled,
+        isInvalid,
+        isReadOnly,
+        isRequired,
+      ],
+    );
+
+    return (
+      <FormControlContext.Provider value={contextValue}>
+        <div role="group" ref={forwardedRef} {...divProps}>
+          {children}
+        </div>
+      </FormControlContext.Provider>
+    );
+  },
+);
 
 type FormLabelProps = Omit<ComponentProps<"label">, "htmlFor">;
 
@@ -152,7 +166,7 @@ export const FormLabel = forwardRef<HTMLLabelElement, FormLabelProps>(
 type HelperTextProps = Omit<ComponentProps<"div">, "id">;
 
 export const FormHelperText = forwardRef<HTMLDivElement, HelperTextProps>(
-  function HelperText(props, forwardedRef) {
+  function FormHelperText(props, forwardedRef) {
     const { getHelperTextProps } = useContext(FormControlContext) ?? {};
 
     return <div {...props} {...getHelperTextProps?.(forwardedRef)} />;
@@ -162,13 +176,19 @@ export const FormHelperText = forwardRef<HTMLDivElement, HelperTextProps>(
 export type ErrorMessageProps = Omit<ComponentProps<"div">, "id">;
 
 export const FormErrorMessage = forwardRef<HTMLDivElement, ErrorMessageProps>(
-  function ErrorMessage(props, forwardedRef) {
+  function FormErrorMessage(props, forwardedRef) {
     const { getErrorMessageProps, isInvalid } =
       useContext(FormControlContext) ?? {};
 
     if (!isInvalid) return null;
 
-    return <div {...props} {...getErrorMessageProps?.(forwardedRef)} />;
+    return (
+      <div
+        aria-live="polite"
+        {...props}
+        {...getErrorMessageProps?.(forwardedRef)}
+      />
+    );
   },
 );
 
@@ -180,6 +200,7 @@ export type FormInputControlProps = {
   "aria-required": AriaAttributes["aria-required"];
   "aria-describedby": AriaAttributes["aria-describedby"];
   "aria-invalid": AriaAttributes["aria-invalid"];
+  "aria-errormessage": AriaAttributes["aria-errormessage"];
 };
 
 export function useFormInputControlProps(
@@ -199,13 +220,13 @@ export function useFormInputControlProps(
 
   const ariaRequired = isRequired || intrinsicProps["aria-required"];
   const ariaInvalid = isInvalid || intrinsicProps["aria-invalid"];
-  const ariaDescribedBy = [
-    hasErrorMessage && isInvalid && errorMessageId,
+  const ariaDescribedBy = joinOrUndefined(
     hasHelperText && helperTextId,
     intrinsicProps["aria-describedby"],
-  ]
-    .filter(Boolean)
-    .join(" ");
+  );
+  const ariaErrorMessage =
+    (hasErrorMessage && isInvalid && errorMessageId) ||
+    intrinsicProps["aria-errormessage"];
 
   return useMemo<FormInputControlProps>(
     () => ({
@@ -214,8 +235,9 @@ export function useFormInputControlProps(
       readOnly: isReadOnly || intrinsicProps.readOnly,
       disabled: isDisabled || intrinsicProps.disabled,
       "aria-required": ariaRequired,
-      "aria-describedby": ariaDescribedBy || undefined,
+      "aria-describedby": ariaDescribedBy,
       "aria-invalid": ariaInvalid,
+      "aria-errormessage": ariaErrorMessage,
     }),
     [
       controlId,
@@ -229,6 +251,7 @@ export function useFormInputControlProps(
       ariaRequired,
       ariaDescribedBy,
       ariaInvalid,
+      ariaErrorMessage,
     ],
   );
 }
